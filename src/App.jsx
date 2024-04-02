@@ -24,7 +24,7 @@ function App() {
 				setData(data)
 			} catch (error) {
 				console.error('Error al realizar la petición:', error)
-			} finally{
+			} finally {
 				setLoading(false)
 			}
 		}
@@ -94,7 +94,7 @@ function App() {
 			}
 			// Adicionalmente, comprobar si la fecha está entre el 1 de septiembre y el 31 de diciembre de hace dos años
 			if (itemDate >= twoYearsAgoHydrologicalYearStart && itemDate <= endOfTwoYearsAgo) {
-				const previousYear = getHydrologicalYear(item.fecha) + 1 
+				const previousYear = getHydrologicalYear(item.fecha) + 1
 				if (organizedData[previousYear]) {
 					organizedData[previousYear].previousYearAccumulated += item.litros
 				}
@@ -115,23 +115,23 @@ function App() {
 	let daysWithoutRain = Math.floor((today - mostRecentDate) / (1000 * 60 * 60 * 24))
 
 	const years = Object.keys(organizedData).sort((a, b) => b - a)
-	const oldestHydrologicalYear = years[years.length - 1] 
+	const oldestHydrologicalYear = years[years.length - 1]
 
 	const adjustedMonthlyTotals = (monthlyTotals) => {
-		const startOfHydrologicalYear = 8;
+		const startOfHydrologicalYear = 8
 		return [
 			...monthlyTotals.slice(startOfHydrologicalYear), // De septiembre a diciembre
 			...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
-		];
-	};
-if (loading) {
-	return (
-		<div>
-			<h1>Registro de lluvias en Castillo de Locubín</h1>
-			<div className="loader"></div>
-		</div>
-	)
-}
+		]
+	}
+	if (loading) {
+		return (
+			<div>
+				<h1>Registro de lluvias en Castillo de Locubín</h1>
+				<div className='loader'></div>
+			</div>
+		)
+	}
 	return (
 		<div>
 			<h1>Registro de lluvias en Castillo de Locubín</h1>
@@ -202,30 +202,53 @@ if (loading) {
 							</tbody>
 						</table>
 						<h4>Acumulados por mes</h4>
-						<table className='table'>
-            <thead>
-              <tr>
-                <th>Mes</th>
-                <th>Acumulado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {adjustedMonthlyTotals(organizedData[year].monthlyTotals).map((total, index) => (
-                <tr key={index}>
-                  <td>{new Date(0, (index + 8) % 12).toLocaleString('es', { month: 'long' })}</td>
-                  <td>{total || 0}</td>
-                </tr>
-              ))}
-              <tr>
-                <td><strong>Total anual</strong></td>
-                <td><strong>{organizedData[year].totalAnnual}</strong></td>
-              </tr>
-            </tbody>
-          </table>
+						{year === years[years.length - 1] ? (
+							<table className='table'>
+								<tbody>
+									<tr>
+										<td>
+											<strong>Total anual</strong>
+										</td>
+										<td>
+											<strong>473</strong>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						) : (
+							<table className='table'>
+								{/* Código existente para mostrar los acumulados mensuales y el total anual */}
+								<thead>
+									<tr>
+										<th>Mes</th>
+										<th>Acumulado</th>
+									</tr>
+								</thead>
+								<tbody>
+									{adjustedMonthlyTotals(organizedData[year].monthlyTotals).map((total, index) => (
+										<tr key={index}>
+											<td>{new Date(0, (index + 8) % 12).toLocaleString('es', { month: 'long' })}</td>
+											<td>{total || 0}</td>
+										</tr>
+									))}
+									<tr>
+										<td>
+											<strong>Total anual</strong>
+										</td>
+										<td>
+											<strong>{organizedData[year].totalAnnual}</strong>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						)}
 					</div>
 				))}
 			</div>
-			<p className='signature'>Datos recogidos por <br /> Rafael Muñoz y <br />Jose Manuel Domínguez López</p>
+			<p className='signature'>
+				Datos recogidos por <br /> Rafael Muñoz y <br />
+				Jose Manuel Domínguez López
+			</p>
 		</div>
 	)
 }
