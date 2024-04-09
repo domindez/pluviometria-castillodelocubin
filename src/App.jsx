@@ -101,12 +101,14 @@ function App() {
 			}
 		})
 
-		// Asegurarse de que los totales anuales se calculan correctamente
 		Object.keys(organizedData).forEach((year) => {
-			const totalAnnual = organizedData[year].monthlyTotals.reduce((sum, current) => sum + current, 0)
-			organizedData[year].totalAnnual = totalAnnual
-		})
-
+			// Ordenar los datos de cada año por fecha antes de calcular los totales
+			organizedData[year].data.sort((a, b) => {
+					const dateA = new Date(a.fechaOriginal);
+					const dateB = new Date(b.fechaOriginal);
+					return dateA - dateB;
+			});
+	});
 		return organizedData
 	}
 
@@ -118,12 +120,13 @@ function App() {
 	const oldestHydrologicalYear = years[years.length - 1]
 
 	const adjustedMonthlyTotals = (monthlyTotals) => {
-		const startOfHydrologicalYear = 8
-		return [
-			...monthlyTotals.slice(startOfHydrologicalYear), // De septiembre a diciembre
-			...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
-		]
-	}
+    const startOfHydrologicalYear = 8;
+    return [
+        ...monthlyTotals.slice(startOfHydrologicalYear), // De septiembre a diciembre
+        ...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
+    ].map(total => parseFloat(total.toFixed(1))); // Redondeo a un decimal
+}
+
 	if (loading) {
 		return (
 			<div>
