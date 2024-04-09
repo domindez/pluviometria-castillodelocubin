@@ -100,7 +100,12 @@ function App() {
 				}
 			}
 		})
-
+	// Asegurarse de que los totales anuales se calculan correctamente
+	Object.keys(organizedData).forEach((year) => {
+		const totalAnnual = organizedData[year].monthlyTotals.reduce((sum, current) => sum + current, 0)
+		organizedData[year].totalAnnual = totalAnnual
+	})
+	
 		Object.keys(organizedData).forEach((year) => {
 			// Ordenar los datos de cada año por fecha antes de calcular los totales
 			organizedData[year].data.sort((a, b) => {
