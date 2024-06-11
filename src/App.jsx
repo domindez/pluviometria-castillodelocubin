@@ -246,7 +246,7 @@ function App() {
 											<strong>Total anual</strong>
 										</td>
 										<td>
-											<strong>{organizedData[year].totalAnnual}</strong>
+											<strong>{(organizedData[year].totalAnnual).toFixed(1)}</strong>
 										</td>
 									</tr>
 								</tbody>
