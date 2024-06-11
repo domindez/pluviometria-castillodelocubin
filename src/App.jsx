@@ -131,7 +131,6 @@ function App() {
 			...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
 		].map((total) => parseFloat(total.toFixed(1))) // Redondeo a un decimal
 	}
-	{console.log((organizedData[currentHydrologicalYear]?.totalAnnual || 0).toFixed(1))}
 
 	if (loading) {
 		return (
