@@ -257,7 +257,10 @@ function App() {
 			</div>
 			<p className='signature'>
 				Datos recogidos por <br /> Rafael Muñoz y <br />
-				Jose Manuel Domínguez López
+				Jose Manuel Domínguez
+			</p>
+			<p className='signature'>
+				Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a>
 			</p>
 		</div>
 	)
