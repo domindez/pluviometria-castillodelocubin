@@ -149,7 +149,6 @@ function App() {
 						<tr>
 							<td>Total litros este año</td>
 							<td style={{ textAlign: 'center' }}>
-								{console.log((organizedData[currentHydrologicalYear]?.totalAnnual || 0).toFixed(1))}
 								{(organizedData[currentHydrologicalYear]?.totalAnnual || 0).toFixed(1)}
 							</td>
 						</tr>
