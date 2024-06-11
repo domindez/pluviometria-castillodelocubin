@@ -155,7 +155,7 @@ function App() {
 						<tr>
 							<td>Litros año anterior por estas fechas</td>
 							<td style={{ textAlign: 'center' }}>
-								{organizedData[currentHydrologicalYear]?.previousYearAccumulated || 0}
+								{(organizedData[currentHydrologicalYear]?.previousYearAccumulated || 0).toFixed(1)}
 							</td>
 						</tr>
 						<tr>
