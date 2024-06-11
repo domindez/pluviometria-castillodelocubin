@@ -100,20 +100,20 @@ function App() {
 				}
 			}
 		})
-	// Asegurarse de que los totales anuales se calculan correctamente
-	Object.keys(organizedData).forEach((year) => {
-		const totalAnnual = organizedData[year].monthlyTotals.reduce((sum, current) => sum + current, 0)
-		organizedData[year].totalAnnual = totalAnnual
-	})
-	
+		// Asegurarse de que los totales anuales se calculan correctamente
+		Object.keys(organizedData).forEach((year) => {
+			const totalAnnual = organizedData[year].monthlyTotals.reduce((sum, current) => sum + current, 0)
+			organizedData[year].totalAnnual = totalAnnual
+		})
+
 		Object.keys(organizedData).forEach((year) => {
 			// Ordenar los datos de cada año por fecha antes de calcular los totales
 			organizedData[year].data.sort((a, b) => {
-					const dateA = new Date(a.fechaOriginal);
-					const dateB = new Date(b.fechaOriginal);
-					return dateA - dateB;
-			});
-	});
+				const dateA = new Date(a.fechaOriginal)
+				const dateB = new Date(b.fechaOriginal)
+				return dateA - dateB
+			})
+		})
 		return organizedData
 	}
 
@@ -125,12 +125,12 @@ function App() {
 	const oldestHydrologicalYear = years[years.length - 1]
 
 	const adjustedMonthlyTotals = (monthlyTotals) => {
-    const startOfHydrologicalYear = 8;
-    return [
-        ...monthlyTotals.slice(startOfHydrologicalYear), // De septiembre a diciembre
-        ...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
-    ].map(total => parseFloat(total.toFixed(1))); // Redondeo a un decimal
-}
+		const startOfHydrologicalYear = 8
+		return [
+			...monthlyTotals.slice(startOfHydrologicalYear), // De septiembre a diciembre
+			...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
+		].map((total) => parseFloat(total.toFixed(1))) // Redondeo a un decimal
+	}
 
 	if (loading) {
 		return (
@@ -148,7 +148,9 @@ function App() {
 					<tbody>
 						<tr>
 							<td>Total litros este año</td>
-							<td style={{ textAlign: 'center' }}>{organizedData[currentHydrologicalYear]?.totalAnnual || 0}</td>
+							<td style={{ textAlign: 'center' }}>
+								{(organizedData[currentHydrologicalYear]?.totalAnnual || 0).toFixed(2)}
+							</td>
 						</tr>
 						<tr>
 							<td>Litros año anterior por estas fechas</td>
