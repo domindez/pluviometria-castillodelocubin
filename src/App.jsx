@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react'
 import './sass/App.scss'
+import InsertDataModal from './InsertDataModal'
 
 function App() {
-	const [data, setData] = useState([])
-	const [counter, setCounter] = useState(0)
-	const [loading, setLoading] = useState(false)
+		const [data, setData] = useState([])
+		const [counter, setCounter] = useState(0)
+		const [loading, setLoading] = useState(false)
+		const [openModal, setOpenModal] = useState(false)
+	
+		const handleOpenModal = () => setOpenModal(true)
+		const handleCloseModal = () => setOpenModal(false)
+	
+		const handleDataInsertSuccess = (newEntry) => {
+			setData([...data, newEntry])
+		}
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setLoading(true)
-				// const response = await fetch('http://localhost:4000/api/get-data', {
-				const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
+				const response = await fetch('http://localhost:4000/api/get-data', {
+				// const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -262,13 +271,14 @@ function App() {
 			<div className='counter'>Visitas desde 18/08/24: {counter}</div>
 
 			<p className='signature'>
-				Datos recogidos por <br /> Rafael Muñoz y <br />
-				Jose Manuel Domínguez
+			Datos recogidos por <br /> Rafael Muñoz y <br />
+			Jose Manuel <span onClick={handleOpenModal}>Domínguez</span>.
 			</p>
 			<p className='signature'>
 				Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a>
 			</p>
-			
+			<InsertDataModal open={openModal} handleClose={handleCloseModal} onSubmitSuccess={handleDataInsertSuccess} />
+
 		</div>
 	)
 }
