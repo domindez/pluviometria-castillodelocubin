@@ -10,8 +10,8 @@ function App() {
 		const fetchData = async () => {
 			try {
 				setLoading(true)
-				const response = await fetch('http://localhost:4000/api/get-data', {
-				// const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
+				// const response = await fetch('http://localhost:4000/api/get-data', {
+				const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
