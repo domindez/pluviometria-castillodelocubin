@@ -73,7 +73,7 @@ const InsertDataModal = ({ open, handleClose, onSubmitSuccess }) => {
 					required
 				/>
 				<TextField
-					label="Clave"
+					label=""
 					type="password"
 					name="clave"
 					fullWidth
