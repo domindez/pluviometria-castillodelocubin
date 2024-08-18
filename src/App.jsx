@@ -3,13 +3,15 @@ import './sass/App.scss'
 
 function App() {
 	const [data, setData] = useState([])
+	const [counter, setCounter] = useState(0)
 	const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setLoading(true)
-				const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
+				const response = await fetch('http://localhost:4000/api/get-data', {
+				// const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
@@ -20,8 +22,9 @@ function App() {
 					throw new Error('La petición falló')
 				}
 
-				const data = await response.json()
-				setData(data)
+				const completeData = await response.json()
+				setData(completeData.data)
+				setCounter(completeData.counter.count)
 			} catch (error) {
 				console.error('Error al realizar la petición:', error)
 			} finally {
@@ -255,6 +258,9 @@ function App() {
 					</div>
 				))}
 			</div>
+
+			<div className='counter'>Visitas desde 18/08/24: {counter}</div>
+
 			<p className='signature'>
 				Datos recogidos por <br /> Rafael Muñoz y <br />
 				Jose Manuel Domínguez
@@ -262,6 +268,7 @@ function App() {
 			<p className='signature'>
 				Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a>
 			</p>
+			
 		</div>
 	)
 }
