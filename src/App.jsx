@@ -19,7 +19,6 @@ function App() {
 		const fetchData = async () => {
 			try {
 				setLoading(true)
-				// const response = await fetch('http://localhost:4000/api/get-data', {
 				const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
 					method: 'GET',
 					headers: {
@@ -53,7 +52,6 @@ function App() {
 		const currentMonth = today.getMonth()
 		const currentDate = today.getDate()
 		const currentHydrologicalYear = today.getFullYear() - (currentMonth < 8 ? 1 : 0)
-		const lastHydrologicalYearStart = new Date(currentHydrologicalYear - 1, 8, 1)
 		const currentHydrologicalYearStart = new Date(currentHydrologicalYear, 8, 1)
 
 		const formatDate = (date) => {
@@ -92,26 +90,34 @@ function App() {
 
 		data.forEach((item) => {
 			const itemDate = new Date(item.fecha)
-			// Comprobar si la fecha del registro está dentro del año hidrológico anterior
-			if (itemDate >= lastHydrologicalYearStart && itemDate < currentHydrologicalYearStart) {
+			const itemYear = getHydrologicalYear(item.fecha)
+
+			// Comparar si la fecha del registro está dentro del mismo rango de tiempo en el año hidrológico anterior
+			const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1)
+			const endOfPreviousYear = new Date(currentHydrologicalYear, 7, 31)
+
+			if (itemDate >= startOfPreviousYear && itemDate <= endOfPreviousYear) {
+				// Compara los meses y días del año anterior para el cálculo correcto
 				if (
 					itemDate.getMonth() < currentMonth ||
 					(itemDate.getMonth() === currentMonth && itemDate.getDate() <= currentDate)
 				) {
-					const previousYear = getHydrologicalYear(item.fecha) + 1
+					const previousYear = itemYear + 1
 					if (organizedData[previousYear]) {
 						organizedData[previousYear].previousYearAccumulated += item.litros
 					}
 				}
 			}
+
 			// Adicionalmente, comprobar si la fecha está entre el 1 de septiembre y el 31 de diciembre de hace dos años
 			if (itemDate >= twoYearsAgoHydrologicalYearStart && itemDate <= endOfTwoYearsAgo) {
-				const previousYear = getHydrologicalYear(item.fecha) + 1
+				const previousYear = itemYear + 1
 				if (organizedData[previousYear]) {
 					organizedData[previousYear].previousYearAccumulated += item.litros
 				}
 			}
 		})
+
 		// Asegurarse de que los totales anuales se calculan correctamente
 		Object.keys(organizedData).forEach((year) => {
 			const totalAnnual = organizedData[year].monthlyTotals.reduce((sum, current) => sum + current, 0)
@@ -159,13 +165,13 @@ function App() {
 				<table className='general-table'>
 					<tbody>
 						<tr>
-							<td>Total litros este año</td>
+							<td>Total litros este año hidrológico</td>
 							<td style={{ textAlign: 'center' }}>
 								{(organizedData[currentHydrologicalYear]?.totalAnnual || 0).toFixed(1)}
 							</td>
 						</tr>
 						<tr>
-							<td>Litros año anterior por estas fechas</td>
+							<td>Litros año hidrológico anterior por estas fechas</td>
 							<td style={{ textAlign: 'center' }}>
 								{(organizedData[currentHydrologicalYear]?.previousYearAccumulated || 0).toFixed(1)}
 							</td>
@@ -239,7 +245,6 @@ function App() {
 							</table>
 						) : (
 							<table className='table'>
-								{/* Código existente para mostrar los acumulados mensuales y el total anual */}
 								<thead>
 									<tr>
 										<th>Mes</th>
