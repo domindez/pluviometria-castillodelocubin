@@ -3,17 +3,17 @@ import './sass/App.scss'
 import InsertDataModal from './InsertDataModal'
 
 function App() {
-		const [data, setData] = useState([])
-		const [counter, setCounter] = useState(0)
-		const [loading, setLoading] = useState(false)
-		const [openModal, setOpenModal] = useState(false)
-	
-		const handleOpenModal = () => setOpenModal(true)
-		const handleCloseModal = () => setOpenModal(false)
-	
-		const handleDataInsertSuccess = (newEntry) => {
-			setData([...data, newEntry])
-		}
+	const [data, setData] = useState([])
+	const [counter, setCounter] = useState(0)
+	const [loading, setLoading] = useState(false)
+	const [openModal, setOpenModal] = useState(false)
+
+	const handleOpenModal = () => setOpenModal(true)
+	const handleCloseModal = () => setOpenModal(false)
+
+	const handleDataInsertSuccess = (newEntry) => {
+		setData([...data, newEntry])
+	}
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -45,29 +45,24 @@ function App() {
 
 	const today = new Date()
 	const currentMonth = today.getMonth()
+	const currentDate = today.getDate()
 	const currentHydrologicalYear = today.getFullYear() - (currentMonth < 8 ? 1 : 0)
 
+	const formatDate = (date) => {
+		const newDate = new Date(date)
+		return newDate.toLocaleDateString('es-ES')
+	}
+
+	const getHydrologicalYear = (date) => {
+		const newDate = new Date(date)
+		let year = newDate.getFullYear()
+		if (newDate.getMonth() < 8) {
+			year -= 1
+		}
+		return year
+	}
+
 	const formatData = (data) => {
-		const today = new Date()
-		const currentMonth = today.getMonth()
-		const currentDate = today.getDate()
-		const currentHydrologicalYear = today.getFullYear() - (currentMonth < 8 ? 1 : 0)
-		const currentHydrologicalYearStart = new Date(currentHydrologicalYear, 8, 1)
-
-		const formatDate = (date) => {
-			const newDate = new Date(date)
-			return newDate.toLocaleDateString('es-ES')
-		}
-
-		const getHydrologicalYear = (date) => {
-			const newDate = new Date(date)
-			let year = newDate.getFullYear()
-			if (newDate.getMonth() < 8) {
-				year -= 1
-			}
-			return year
-		}
-
 		const organizedData = data.reduce((acc, item) => {
 			const itemDate = new Date(item.fecha)
 			const hydroYear = getHydrologicalYear(item.fecha)
@@ -83,34 +78,15 @@ function App() {
 			return acc
 		}, {})
 
-		// Definir el inicio del año hidrológico de hace dos años
-		const twoYearsAgoHydrologicalYearStart = new Date(currentHydrologicalYearStart.getFullYear() - 2, 8, 1)
-		// Definir el final del año natural de hace dos años
-		const endOfTwoYearsAgo = new Date(currentHydrologicalYearStart.getFullYear() - 1, 11, 31) // 31 de Diciembre
-
 		data.forEach((item) => {
 			const itemDate = new Date(item.fecha)
 			const itemYear = getHydrologicalYear(item.fecha)
 
-			// Comparar si la fecha del registro está dentro del mismo rango de tiempo en el año hidrológico anterior
+			// Limitar al rango del 1 de septiembre del año hidrológico anterior hasta la fecha equivalente del año actual
 			const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1)
-			const endOfPreviousYear = new Date(currentHydrologicalYear, 7, 31)
+			const equivalentDateLastYear = new Date(currentHydrologicalYear - 1, currentMonth, currentDate)
 
-			if (itemDate >= startOfPreviousYear && itemDate <= endOfPreviousYear) {
-				// Compara los meses y días del año anterior para el cálculo correcto
-				if (
-					itemDate.getMonth() < currentMonth ||
-					(itemDate.getMonth() === currentMonth && itemDate.getDate() <= currentDate)
-				) {
-					const previousYear = itemYear + 1
-					if (organizedData[previousYear]) {
-						organizedData[previousYear].previousYearAccumulated += item.litros
-					}
-				}
-			}
-
-			// Adicionalmente, comprobar si la fecha está entre el 1 de septiembre y el 31 de diciembre de hace dos años
-			if (itemDate >= twoYearsAgoHydrologicalYearStart && itemDate <= endOfTwoYearsAgo) {
+			if (itemDate >= startOfPreviousYear && itemDate <= equivalentDateLastYear) {
 				const previousYear = itemYear + 1
 				if (organizedData[previousYear]) {
 					organizedData[previousYear].previousYearAccumulated += item.litros
@@ -124,14 +100,15 @@ function App() {
 			organizedData[year].totalAnnual = totalAnnual
 		})
 
+		// Ordenar los datos por fecha
 		Object.keys(organizedData).forEach((year) => {
-			// Ordenar los datos de cada año por fecha antes de calcular los totales
 			organizedData[year].data.sort((a, b) => {
 				const dateA = new Date(a.fechaOriginal)
 				const dateB = new Date(b.fechaOriginal)
 				return dateA - dateB
 			})
 		})
+
 		return organizedData
 	}
 
