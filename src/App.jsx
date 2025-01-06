@@ -84,7 +84,7 @@ function App() {
 
 			// Limitar al rango del 1 de septiembre del año hidrológico anterior hasta la fecha equivalente del año actual
 			const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1)
-			const equivalentDateLastYear = new Date(currentHydrologicalYear - 1, currentMonth, currentDate)
+			const equivalentDateLastYear = new Date(currentHydrologicalYear, currentMonth, currentDate)
 
 			if (itemDate >= startOfPreviousYear && itemDate <= equivalentDateLastYear) {
 				const previousYear = itemYear + 1
