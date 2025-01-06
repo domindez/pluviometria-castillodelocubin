@@ -19,7 +19,6 @@ function App() {
 		const fetchData = async () => {
 			try {
 				setLoading(true)
-				console.log('Iniciando fetch...') // LOG
 				const response = await fetch('https://backend-pluviometria-production.up.railway.app/api/get-data', {
 					method: 'GET',
 					headers: {
@@ -27,15 +26,11 @@ function App() {
 					},
 				})
 
-				console.log('Respuesta HTTP:', response.status) // LOG
-
 				if (!response.ok) {
 					throw new Error('La petición falló')
 				}
 
 				const completeData = await response.json()
-				console.log('Datos recibidos desde el backend:', completeData) // LOG
-
 				setData(completeData.data)
 				setCounter(completeData.counter.count)
 			} catch (error) {
@@ -52,9 +47,6 @@ function App() {
 	const currentMonth = today.getMonth()
 	const currentDate = today.getDate()
 	const currentHydrologicalYear = today.getFullYear() - (currentMonth < 8 ? 1 : 0)
-
-	console.log('HOY:', today.toISOString()) // LOG
-	console.log('currentHydrologicalYear:', currentHydrologicalYear) // LOG
 
 	const formatDate = (date) => {
 		const newDate = new Date(date)
@@ -80,47 +72,29 @@ function App() {
 				acc[hydroYear] = { monthlyTotals: Array(12).fill(0), data: [], previousYearAccumulated: 0 }
 			}
 
-			acc[hydroYear].data.push({
-				...item,
-				fecha: formatDate(item.fecha),
-				fechaOriginal: item.fecha
-			})
+			acc[hydroYear].data.push({ ...item, fecha: formatDate(item.fecha), fechaOriginal: item.fecha })
 			acc[hydroYear].monthlyTotals[month] += item.litros
 
 			return acc
 		}, {})
 
-		// LOG: Comprobamos los datos en organizedData tras el primer reduce
-		console.log('organizedData tras el primer reduce:', JSON.parse(JSON.stringify(organizedData)))
-
 		data.forEach((item) => {
 			const itemDate = new Date(item.fecha)
 			const itemYear = getHydrologicalYear(item.fecha)
 
+			// Limitar al rango del 1 de septiembre del año hidrológico anterior hasta la fecha equivalente del año actual
 			const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1)
 			const equivalentDateLastYear = new Date(currentHydrologicalYear, currentMonth, currentDate)
 
-			// LOG: Para cada item, veamos su fecha y lo que consideramos como rango
-			console.log(
-				'Item date:', itemDate.toISOString(),
-				'| itemYear:', itemYear,
-				'| startOfPreviousYear:', startOfPreviousYear.toISOString(),
-				'| equivalentDateLastYear:', equivalentDateLastYear.toISOString()
-			)
-
 			if (itemDate >= startOfPreviousYear && itemDate <= equivalentDateLastYear) {
 				const previousYear = itemYear + 1
-				// LOG: Vemos si existe organizedData[previousYear] y sumamos
 				if (organizedData[previousYear]) {
-					console.log(`\tSumando a previousYearAccumulated de year=${previousYear}:`, item.litros) // LOG
 					organizedData[previousYear].previousYearAccumulated += item.litros
-				} else {
-					console.log(`\tNo existe organizedData para year=${previousYear}, no sumamos.`) // LOG
 				}
 			}
 		})
 
-		// Asegurar totales
+		// Asegurarse de que los totales anuales se calculan correctamente
 		Object.keys(organizedData).forEach((year) => {
 			const totalAnnual = organizedData[year].monthlyTotals.reduce((sum, current) => sum + current, 0)
 			organizedData[year].totalAnnual = totalAnnual
@@ -135,17 +109,12 @@ function App() {
 			})
 		})
 
-		// LOG final: organizedData terminado
-		console.log('organizedData final:', JSON.parse(JSON.stringify(organizedData)))
 		return organizedData
 	}
 
 	const organizedData = formatData(data)
-	let mostRecentDate =
-		data.length > 0 ? new Date(Math.max(...data.map((e) => new Date(e.fecha).getTime()))) : today
+	let mostRecentDate = data.length > 0 ? new Date(Math.max(...data.map((e) => new Date(e.fecha).getTime()))) : today
 	let daysWithoutRain = Math.floor((today - mostRecentDate) / (1000 * 60 * 60 * 24))
-
-	console.log('Fecha más reciente de lluvia:', mostRecentDate.toISOString()) // LOG
 
 	const years = Object.keys(organizedData).sort((a, b) => b - a)
 	const oldestHydrologicalYear = years[years.length - 1]
@@ -153,9 +122,9 @@ function App() {
 	const adjustedMonthlyTotals = (monthlyTotals) => {
 		const startOfHydrologicalYear = 8
 		return [
-			...monthlyTotals.slice(startOfHydrologicalYear), 
-			...monthlyTotals.slice(0, startOfHydrologicalYear),
-		].map((total) => parseFloat(total.toFixed(1))) 
+			...monthlyTotals.slice(startOfHydrologicalYear), // De septiembre a diciembre
+			...monthlyTotals.slice(0, startOfHydrologicalYear), // De enero a agosto
+		].map((total) => parseFloat(total.toFixed(1))) // Redondeo a un decimal
 	}
 
 	if (loading) {
@@ -262,11 +231,7 @@ function App() {
 								<tbody>
 									{adjustedMonthlyTotals(organizedData[year].monthlyTotals).map((total, index) => (
 										<tr key={index}>
-											<td>
-												{new Date(0, (index + 8) % 12).toLocaleString('es', {
-													month: 'long'
-												})}
-											</td>
+											<td>{new Date(0, (index + 8) % 12).toLocaleString('es', { month: 'long' })}</td>
 											<td>{total || 0}</td>
 										</tr>
 									))}
@@ -275,7 +240,7 @@ function App() {
 											<strong>Total anual</strong>
 										</td>
 										<td>
-											<strong>{organizedData[year].totalAnnual.toFixed(1)}</strong>
+											<strong>{(organizedData[year].totalAnnual).toFixed(1)}</strong>
 										</td>
 									</tr>
 								</tbody>
@@ -288,13 +253,14 @@ function App() {
 			<div className='counter'>Visitas desde 18/08/24: {counter}</div>
 
 			<p className='signature'>
-				Datos recogidos por <br /> Rafael Muñoz y <br />
-				Jose Manuel <span onClick={handleOpenModal}>Domínguez</span>.
+			Datos recogidos por <br /> Rafael Muñoz y <br />
+			Jose Manuel <span onClick={handleOpenModal}>Domínguez</span>.
 			</p>
 			<p className='signature'>
 				Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a>
 			</p>
 			<InsertDataModal open={openModal} handleClose={handleCloseModal} onSubmitSuccess={handleDataInsertSuccess} />
+
 		</div>
 	)
 }
