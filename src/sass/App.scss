@@ -101,6 +101,10 @@ h1 {
 	}
 }
 
+.general-table {
+	width: fit-content;
+}
+
 .signature {
 	margin: 40px auto 20px;
 	text-align: center;
@@ -141,4 +145,10 @@ h1 {
 		transform: scale(1.8);
 		opacity: 0;
 	}
+}
+
+.total-year{
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 }

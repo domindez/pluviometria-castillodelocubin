@@ -159,7 +159,34 @@ function App() {
 						</tr>
 					</tbody>
 				</table>
+
+				
 			</div>
+			{/* Nueva tabla: Total años anteriores */}
+		<div className='total-year'>
+			<h2>Total años anteriores</h2>
+			<table className='table general-table'>
+				<thead>
+					<tr>
+						<th>Año hidrológico</th>
+						<th>Total litros</th>
+					</tr>
+				</thead>
+				<tbody>
+	{years.map((year) => (
+		<tr key={year}>
+			<td>{year}-{parseInt(year) + 1}</td>
+			<td style={{ textAlign: 'center' }}>
+				{year === oldestHydrologicalYear ? (473).toFixed(1) : (organizedData[year]?.totalAnnual || 0).toFixed(1)}
+			</td>
+		</tr>
+	))}
+</tbody>
+			</table>
+		</div>
+				<br />
+				<h2>Datos completos por año</h2>
+				<br />
 			<div className='year'>
 				{years.map((year) => (
 					<div key={year}>
