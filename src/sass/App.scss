@@ -109,12 +109,12 @@ h1 {
 	margin: 40px auto 20px;
 	text-align: center;
 
-	a{
+	a {
 		color: rgb(210, 137, 9);
 	}
 }
 
-.counter{
+.counter {
 	display: flex;
 	width: fit-content;
 	margin: 40px auto 0px;
@@ -147,8 +147,14 @@ h1 {
 	}
 }
 
-.total-year{
+.total-year {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
+}
+
+.hide-mobile {
+	@media screen and (max-width: 1000px) {
+		display: none;
+	}
 }

@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
 import './sass/App.scss'
 import InsertDataModal from './InsertDataModal'
+import { Bar } from 'react-chartjs-2'
+import {
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	BarElement,
+	Title,
+	Tooltip,
+	Legend,
+} from 'chart.js'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 function App() {
 	const [data, setData] = useState([])
@@ -127,6 +139,35 @@ function App() {
 		].map((total) => parseFloat(total.toFixed(1))) // Redondeo a un decimal
 	}
 
+	// Configuración para la gráfica: se ordenan los años de forma ascendente
+	const yearsAscending = [...years].reverse()
+	const chartData = {
+		labels: yearsAscending.map((year) => `${year}-${parseInt(year) + 1}`),
+		datasets: [
+			{
+				label: 'Total Litros',
+				data: yearsAscending.map((year) =>
+					year === oldestHydrologicalYear ? 473 : (organizedData[year]?.totalAnnual || 0)
+				),
+				backgroundColor: 'rgba(2, 117, 216, 0.5)',
+				borderColor: 'rgba(2, 117, 216, 1)',
+				borderWidth: 1,
+			},
+		],
+	}
+	const options = {
+		responsive: true,
+		plugins: {
+			legend: {
+				position: 'top',
+			},
+			title: {
+				display: true,
+				text: 'Datos anuales',
+			},
+		},
+	}
+
 	if (loading) {
 		return (
 			<div>
@@ -159,34 +200,43 @@ function App() {
 						</tr>
 					</tbody>
 				</table>
-
-				
 			</div>
+
 			{/* Nueva tabla: Total años anteriores */}
-		<div className='total-year'>
-			<h2>Total años anteriores</h2>
-			<table className='table general-table'>
-				<thead>
-					<tr>
-						<th>Año hidrológico</th>
-						<th>Total litros</th>
-					</tr>
-				</thead>
-				<tbody>
-	{years.map((year) => (
-		<tr key={year}>
-			<td>{year}-{parseInt(year) + 1}</td>
-			<td style={{ textAlign: 'center' }}>
-				{year === oldestHydrologicalYear ? (473).toFixed(1) : (organizedData[year]?.totalAnnual || 0).toFixed(1)}
-			</td>
-		</tr>
-	))}
-</tbody>
-			</table>
-		</div>
-				<br />
-				<h2>Datos completos por año</h2>
-				<br />
+			<div className='total-year'>
+				<h2>Total años anteriores</h2>
+				<table className='table general-table'>
+					<thead>
+						<tr>
+							<th>Año hidrológico</th>
+							<th>Total litros</th>
+						</tr>
+					</thead>
+					<tbody>
+						{years.map((year) => (
+							<tr key={year}>
+								<td>
+									{year}-{parseInt(year) + 1}
+								</td>
+								<td style={{ textAlign: 'center' }}>
+									{year === oldestHydrologicalYear
+										? (473).toFixed(1)
+										: (organizedData[year]?.totalAnnual || 0).toFixed(1)}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			{/* Gráfica con los datos anuales */}
+			<div style={{ margin: '40px auto', maxWidth: '800px' }} className='hide-mobile'>
+				<Bar data={chartData} options={options} />
+			</div>
+
+			<br />
+			<h2>Datos completos por año</h2>
+			<br />
 			<div className='year'>
 				{years.map((year) => (
 					<div key={year}>
@@ -201,12 +251,14 @@ function App() {
 								</tr>
 							</thead>
 							<tbody>
-								{organizedData[year].data.reverse().map((item, index) => (
-									<tr key={index}>
-										<td>{item.fecha}</td>
-										<td>{item.litros}</td>
-									</tr>
-								))}
+								{organizedData[year].data
+									.reverse()
+									.map((item, index) => (
+										<tr key={index}>
+											<td>{item.fecha}</td>
+											<td>{item.litros}</td>
+										</tr>
+									))}
 								{year === oldestHydrologicalYear && (
 									<>
 										<tr>
@@ -280,14 +332,13 @@ function App() {
 			<div className='counter'>Visitas desde 18/08/24: {counter}</div>
 
 			<p className='signature'>
-			Datos recogidos por <br /> Rafael Muñoz y <br />
-			Jose Manuel <span onClick={handleOpenModal}>Domínguez</span>.
+				Datos recogidos por <br /> Rafael Muñoz y <br />
+				Jose Manuel <span onClick={handleOpenModal}>Domínguez</span>.
 			</p>
 			<p className='signature'>
 				Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a>
 			</p>
 			<InsertDataModal open={openModal} handleClose={handleCloseModal} onSubmitSuccess={handleDataInsertSuccess} />
-
 		</div>
 	)
 }
