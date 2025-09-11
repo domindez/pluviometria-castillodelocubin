@@ -90,18 +90,24 @@ function App() {
 			return acc
 		}, {})
 
+		// Asegurar que el año hidrológico actual existe en organizedData
+		if (!organizedData[currentHydrologicalYear]) {
+			organizedData[currentHydrologicalYear] = { monthlyTotals: Array(12).fill(0), data: [], previousYearAccumulated: 0 }
+		}
+
+		// Calcular acumulado del año anterior por estas fechas
 		data.forEach((item) => {
 			const itemDate = new Date(item.fecha)
 			const itemYear = getHydrologicalYear(item.fecha)
 
-			// Limitar al rango del 1 de septiembre del año hidrológico anterior hasta la fecha equivalente del año actual
-			const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1)
-			const equivalentDateLastYear = new Date(currentHydrologicalYear, currentMonth, currentDate)
+			// Solo considerar registros del año hidrológico anterior (2023)
+			if (itemYear === currentHydrologicalYear - 1) {
+				// Crear rango desde 1 septiembre del año anterior hasta la fecha actual del año anterior
+				const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1) // 1 septiembre 2023
+				const equivalentDateLastYear = new Date(currentHydrologicalYear - 1, currentMonth, currentDate) // 11 septiembre 2024
 
-			if (itemDate >= startOfPreviousYear && itemDate <= equivalentDateLastYear) {
-				const previousYear = itemYear + 1
-				if (organizedData[previousYear]) {
-					organizedData[previousYear].previousYearAccumulated += item.litros
+				if (itemDate >= startOfPreviousYear && itemDate <= equivalentDateLastYear) {
+					organizedData[currentHydrologicalYear].previousYearAccumulated += item.litros
 				}
 			}
 		})
