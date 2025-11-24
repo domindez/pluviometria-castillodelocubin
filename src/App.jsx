@@ -176,6 +176,37 @@ function App() {
 		].map((total) => parseFloat(total.toFixed(1))) // Redondeo a un decimal
 	}
 
+	// Calcular media mensual desde 2015-2016
+	const calculateMonthlyAverages = () => {
+		const startYearForAverage = 2015
+		const monthlyAccumulated = Array(12).fill(0).map(() => ({ sum: 0, count: 0 }))
+
+		Object.keys(organizedData).forEach((year) => {
+			const yearNum = parseInt(year)
+			if (yearNum >= startYearForAverage && yearNum < currentHydrologicalYear) {
+				organizedData[year].monthlyTotals.forEach((total, monthIndex) => {
+					if (total > 0) {
+						monthlyAccumulated[monthIndex].sum += total
+						monthlyAccumulated[monthIndex].count += 1
+					}
+				})
+			}
+		})
+
+		// Calcular media y ajustar al orden del año hidrológico
+		const averages = monthlyAccumulated.map((month) => 
+			month.count > 0 ? parseFloat((month.sum / month.count).toFixed(1)) : 0
+		)
+
+		// Reordenar: septiembre a agosto
+		return [
+			...averages.slice(8), // Sept, Oct, Nov, Dic
+			...averages.slice(0, 8), // Ene, Feb, Mar, Abr, May, Jun, Jul, Ago
+		]
+	}
+
+	const monthlyAverages = calculateMonthlyAverages()
+
 	// Configuración para la gráfica: se ordenan los años de forma ascendente
 	const yearsAscending = [...years].reverse()
 	const chartData = {
@@ -201,6 +232,43 @@ function App() {
 			title: {
 				display: true,
 				text: 'Datos anuales',
+			},
+		},
+	}
+
+	// Configuración para la gráfica de medias mensuales
+	const monthNames = [
+		'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+		'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto'
+	]
+
+	const monthlyAverageChartData = {
+		labels: monthNames,
+		datasets: [
+			{
+				label: 'Media de Litros',
+				data: monthlyAverages,
+				backgroundColor: 'rgba(75, 192, 192, 0.5)',
+				borderColor: 'rgba(75, 192, 192, 1)',
+				borderWidth: 1,
+			},
+		],
+	}
+
+	const monthlyAverageOptions = {
+		responsive: true,
+		plugins: {
+			legend: {
+				position: 'top',
+			},
+			title: {
+				display: true,
+				text: `Media mensual de litros (desde 2015-2016)`,
+			},
+		},
+		scales: {
+			y: {
+				beginAtZero: true,
 			},
 		},
 	}
@@ -275,6 +343,11 @@ function App() {
 			{/* Gráfica con los datos anuales */}
 			<div style={{ margin: '40px auto', maxWidth: '800px' }} className='hide-mobile'>
 				<Bar data={chartData} options={options} />
+			</div>
+
+			{/* Gráfica con la media mensual */}
+			<div style={{ margin: '40px auto', maxWidth: '800px' }} className='hide-mobile'>
+				<Bar data={monthlyAverageChartData} options={monthlyAverageOptions} />
 			</div>
 
 			<br />
