@@ -92,7 +92,7 @@ function App() {
 
 		// Asegurar que el año hidrológico actual existe en organizedData
 		if (!organizedData[currentHydrologicalYear]) {
-			organizedData[currentHydrologicalYear] = { monthlyTotals: Array(12).fill(0), data: [], previousYearAccumulated: 0 }
+			organizedData[currentHydrologicalYear] = { monthlyTotals: Array(12).fill(0), data: [], previousYearAccumulated: 0, averagePreviousYears: 0 }
 		}
 
 		// Calcular acumulado del año anterior por estas fechas
@@ -111,6 +111,37 @@ function App() {
 				}
 			}
 		})
+
+		// Calcular media de años anteriores (desde 2015-2016) por estas fechas
+		const startYearForAverage = 2015
+		const yearsToConsider = []
+		
+		for (let year = startYearForAverage; year < currentHydrologicalYear; year++) {
+			let accumulatedForYear = 0
+			
+			data.forEach((item) => {
+				const itemDate = new Date(item.fecha)
+				const itemYear = getHydrologicalYear(item.fecha)
+				
+				if (itemYear === year) {
+					// Crear rango desde 1 septiembre hasta la fecha actual del año correspondiente
+					const startOfYear = new Date(year, 8, 1)
+					const equivalentDateInYear = new Date(year, currentMonth, currentDate)
+					
+					if (itemDate >= startOfYear && itemDate <= equivalentDateInYear) {
+						accumulatedForYear += item.litros
+					}
+				}
+			})
+			
+			yearsToConsider.push(accumulatedForYear)
+		}
+		
+		// Calcular la media
+		if (yearsToConsider.length > 0) {
+			const sum = yearsToConsider.reduce((acc, val) => acc + val, 0)
+			organizedData[currentHydrologicalYear].averagePreviousYears = sum / yearsToConsider.length
+		}
 
 		// Asegurarse de que los totales anuales se calculan correctamente
 		Object.keys(organizedData).forEach((year) => {
@@ -192,6 +223,12 @@ function App() {
 							<td>Total litros este año hidrológico</td>
 							<td style={{ textAlign: 'center' }}>
 								{(organizedData[currentHydrologicalYear]?.totalAnnual || 0).toFixed(1)}
+							</td>
+						</tr>
+						<tr>
+							<td>Media de litros años hidrológicos anteriores por estas fechas</td>
+							<td style={{ textAlign: 'center' }}>
+								{(organizedData[currentHydrologicalYear]?.averagePreviousYears || 0).toFixed(1)}
 							</td>
 						</tr>
 						<tr>
