@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import '../sass/App.scss'
 import '../sass/RegistroPage.scss'
@@ -8,6 +8,10 @@ const RegistroPage = ({ onSubmitSuccess }) => {
 	const [newData, setNewData] = useState({ fecha: '', litros: '', clave: '' })
 	const [loading, setLoading] = useState(false)
 	const [message, setMessage] = useState(null)
+
+	useEffect(() => {
+		document.title = 'Insertar Registro | Pluviometría Castillo de Locubín'
+	}, [])
 
 	const handleChange = (e) => {
 		setNewData({ ...newData, [e.target.name]: e.target.value })

@@ -18,27 +18,36 @@ body {
 .app-header {
 	background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
 	color: white;
-	padding: 24px 24px 20px;
+	padding: 20px 48px;
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
 	box-shadow: 0 2px 12px rgba(2, 117, 216, 0.3);
 
+	@media (max-width: 900px) {
+		padding: 20px 24px;
+		justify-content: center;
+	}
+
 	@media (max-width: 480px) {
-		padding: 20px 16px 16px;
+		padding: 16px;
 	}
 }
 
 .header-text {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	text-align: center;
+	align-items: flex-start;
+
+	@media (max-width: 900px) {
+		align-items: center;
+		text-align: center;
+	}
 
 	h1 {
 		color: white;
 		margin: 0;
-		font-size: 1.5rem;
+		font-size: 1.4rem;
 		font-weight: 600;
 		letter-spacing: -0.5px;
 
@@ -49,7 +58,7 @@ body {
 
 	p {
 		margin: 4px 0 0;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 		opacity: 0.85;
 		font-weight: 400;
 
@@ -59,23 +68,48 @@ body {
 	}
 }
 
-// Menú de navegación
-.nav-menu {
+// Menú de navegación - Desktop (dentro del header)
+.nav-desktop {
 	display: flex;
+	gap: 4px;
+	padding: 0;
+	background: none;
+	border: none;
+	box-shadow: none;
+
+	button {
+		padding: 8px 14px;
+		color: rgba(255, 255, 255, 0.85);
+		font-size: 0.9rem;
+		font-weight: 500;
+		border-radius: 6px;
+		transition: all 0.2s ease;
+		background: none;
+		border: none;
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgba(255, 255, 255, 0.15);
+			color: white;
+		}
+	}
+
+	@media (max-width: 900px) {
+		display: none;
+	}
+}
+
+// Menú de navegación - Mobile (fuera del header)
+.nav-mobile {
+	display: none;
 	justify-content: center;
 	gap: 8px;
 	padding: 12px 24px;
 	background-color: white;
 	border-bottom: 1px solid #e0e0e0;
-	position: sticky;
-	top: 0;
-	z-index: 100;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
-	a,
 	button {
 		padding: 8px 16px;
-		text-decoration: none;
 		color: #555;
 		font-size: 0.9rem;
 		font-weight: 500;
@@ -89,8 +123,17 @@ body {
 			background-color: #f0f2f5;
 			color: #0275d8;
 		}
+	}
 
-		@media (max-width: 480px) {
+	@media (max-width: 900px) {
+		display: flex;
+	}
+
+	@media (max-width: 480px) {
+		padding: 10px 16px;
+		gap: 4px;
+
+		button {
 			padding: 8px 12px;
 			font-size: 0.8rem;
 		}

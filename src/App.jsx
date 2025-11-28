@@ -600,11 +600,16 @@ function App() {
 					<h1>Registro de lluvias de Castillo de Locubín</h1>
 					<p>Datos recogidos por Rafael Muñoz y Jose Manuel Domínguez</p>
 				</div>
+				<nav className='nav-menu nav-desktop'>
+					<button onClick={() => scrollToSection('resumen')}>Resumen</button>
+					<button onClick={() => scrollToSection('historico')}>Histórico</button>
+					<button onClick={() => scrollToSection('graficos')}>Gráficos</button>
+					<button onClick={() => scrollToSection('datos')}>Datos</button>
+				</nav>
 			</header>
-			<nav className='nav-menu'>
+			<nav className='nav-menu nav-mobile'>
 				<button onClick={() => scrollToSection('resumen')}>Resumen</button>
 				<button onClick={() => scrollToSection('historico')}>Histórico</button>
-				<button onClick={() => scrollToSection('graficos')} className='hide-mobile'>Gráficos</button>
 				<button onClick={() => scrollToSection('datos')}>Datos</button>
 			</nav>
 			<div className='main-content'>
