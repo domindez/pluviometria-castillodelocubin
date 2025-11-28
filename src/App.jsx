@@ -1,30 +1,35 @@
 import { useEffect, useState } from 'react'
 import './sass/App.scss'
-import InsertDataModal from './InsertDataModal'
-import { Bar } from 'react-chartjs-2'
+import { Bar, Line } from 'react-chartjs-2'
 import {
 	Chart as ChartJS,
 	CategoryScale,
 	LinearScale,
 	BarElement,
+	PointElement,
+	LineElement,
 	Title,
 	Tooltip,
 	Legend,
+	Filler,
 } from 'chart.js'
+import annotationPlugin from 'chartjs-plugin-annotation'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, Filler, annotationPlugin)
 
 function App() {
 	const [data, setData] = useState([])
 	const [counter, setCounter] = useState(0)
 	const [loading, setLoading] = useState(false)
-	const [openModal, setOpenModal] = useState(false)
+	const [showFullYear, setShowFullYear] = useState(false)
+	const [heatmapMode, setHeatmapMode] = useState('total') // 'total' or 'count'
+	const [activeTooltip, setActiveTooltip] = useState(null)
 
-	const handleOpenModal = () => setOpenModal(true)
-	const handleCloseModal = () => setOpenModal(false)
-
-	const handleDataInsertSuccess = (newEntry) => {
-		setData([...data, newEntry])
+	const scrollToSection = (sectionId) => {
+		const element = document.getElementById(sectionId)
+		if (element) {
+			element.scrollIntoView({ behavior: 'smooth' })
+		}
 	}
 
 	useEffect(() => {
@@ -176,6 +181,29 @@ function App() {
 		].map((total) => parseFloat(total.toFixed(1))) // Redondeo a un decimal
 	}
 
+	// Calcular media anual de todos los años (desde 2014-2015)
+	const calculateYearlyAverage = () => {
+		const startYearForAverage = 2014
+		const yearlyTotals = []
+
+		Object.keys(organizedData).forEach((year) => {
+			const yearNum = parseInt(year)
+			// Solo años completos (desde 2014 hasta el año anterior al actual)
+			if (yearNum >= startYearForAverage && yearNum < currentHydrologicalYear) {
+				const total = yearNum === parseInt(oldestHydrologicalYear) ? 473 : (organizedData[year]?.totalAnnual || 0)
+				yearlyTotals.push(total)
+			}
+		})
+
+		if (yearlyTotals.length > 0) {
+			const sum = yearlyTotals.reduce((acc, val) => acc + val, 0)
+			return sum / yearlyTotals.length
+		}
+		return 0
+	}
+
+	const yearlyAverage = calculateYearlyAverage()
+
 	// Calcular media mensual desde 2015-2016
 	const calculateMonthlyAverages = () => {
 		const startYearForAverage = 2015
@@ -233,6 +261,29 @@ function App() {
 				display: true,
 				text: 'Datos anuales',
 			},
+			annotation: {
+				annotations: {
+					line1: {
+						type: 'line',
+						yMin: yearlyAverage,
+						yMax: yearlyAverage,
+						borderColor: 'rgba(255, 99, 132, 0.8)',
+						borderWidth: 2,
+						borderDash: [6, 6],
+						label: {
+							display: true,
+							content: `Media: ${yearlyAverage.toFixed(1)} L`,
+							position: 'end',
+							backgroundColor: 'rgba(255, 99, 132, 0.8)',
+							color: 'white',
+							font: {
+								size: 12,
+								weight: 'bold',
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -263,7 +314,7 @@ function App() {
 			},
 			title: {
 				display: true,
-				text: `Media mensual de litros (desde 2015-2016)`,
+				text: `Media mensual de litros`,
 			},
 		},
 		scales: {
@@ -273,17 +324,292 @@ function App() {
 		},
 	}
 
+	// Calcular progresión acumulada del año actual vs media histórica
+	const calculateProgressionData = () => {
+		const startYearForAverage = 2015
+		
+		// Generar etiquetas para cada día del año hidrológico (1 sept - 31 ago)
+		const generateDayLabels = () => {
+			const labels = []
+			const monthsOrder = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7] // Sept a Ago
+			const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+			const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+			
+			monthsOrder.forEach((month) => {
+				for (let day = 1; day <= daysInMonth[month]; day++) {
+					// Solo mostrar etiqueta el día 1 de cada mes para no saturar
+					if (day === 1) {
+						labels.push(`1 ${monthNames[month]}`)
+					} else {
+						labels.push('')
+					}
+				}
+			})
+			return labels
+		}
+
+		// Convertir fecha a día del año hidrológico (0 = 1 sept, 365 = 31 ago)
+		const getHydrologicalDayOfYear = (date) => {
+			const d = new Date(date)
+			const month = d.getMonth()
+			const day = d.getDate()
+			const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+			const monthsOrder = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7]
+			
+			let dayOfYear = 0
+			for (let i = 0; i < monthsOrder.length; i++) {
+				if (monthsOrder[i] === month) {
+					dayOfYear += day - 1
+					break
+				}
+				dayOfYear += daysInMonth[monthsOrder[i]]
+			}
+			return dayOfYear
+		}
+
+		// Calcular acumulado día a día para el año actual
+		const currentYearDaily = Array(365).fill(0)
+		if (organizedData[currentHydrologicalYear]) {
+			organizedData[currentHydrologicalYear].data.forEach((item) => {
+				const dayIndex = getHydrologicalDayOfYear(item.fechaOriginal)
+				if (dayIndex >= 0 && dayIndex < 365) {
+					currentYearDaily[dayIndex] += item.litros
+				}
+			})
+		}
+
+		// Convertir a acumulado
+		const currentYearAccumulated = []
+		let cumSum = 0
+		const todayDayIndex = getHydrologicalDayOfYear(today)
+		
+		for (let i = 0; i <= todayDayIndex && i < 365; i++) {
+			cumSum += currentYearDaily[i]
+			currentYearAccumulated.push(parseFloat(cumSum.toFixed(1)))
+		}
+
+		// Calcular media histórica día a día
+		const historicalDailyAccumulated = Array(365).fill(0).map(() => ({ sum: 0, count: 0 }))
+		
+		Object.keys(organizedData).forEach((year) => {
+			const yearNum = parseInt(year)
+			if (yearNum >= startYearForAverage && yearNum < currentHydrologicalYear) {
+				const yearDaily = Array(365).fill(0)
+				
+				organizedData[year].data.forEach((item) => {
+					const dayIndex = getHydrologicalDayOfYear(item.fechaOriginal)
+					if (dayIndex >= 0 && dayIndex < 365) {
+						yearDaily[dayIndex] += item.litros
+					}
+				})
+
+				// Convertir a acumulado para este año
+				let yearCumSum = 0
+				for (let i = 0; i < 365; i++) {
+					yearCumSum += yearDaily[i]
+					historicalDailyAccumulated[i].sum += yearCumSum
+					historicalDailyAccumulated[i].count += 1
+				}
+			}
+		})
+
+		// Calcular media
+		const averageAccumulated = historicalDailyAccumulated.map((day) => 
+			day.count > 0 ? parseFloat((day.sum / day.count).toFixed(1)) : 0
+		)
+
+		return {
+			labels: generateDayLabels(),
+			currentYear: currentYearAccumulated,
+			averageYear: averageAccumulated.slice(0, todayDayIndex + 1),
+			fullAverage: averageAccumulated,
+		}
+	}
+
+	const progressionData = calculateProgressionData()
+
+	const progressionChartData = {
+		labels: showFullYear ? progressionData.labels : progressionData.labels.slice(0, progressionData.currentYear.length),
+		datasets: [
+			{
+				label: `Año actual`,
+				data: progressionData.currentYear,
+				borderColor: 'rgba(2, 117, 216, 1)',
+				backgroundColor: 'rgba(2, 117, 216, 0.1)',
+				fill: true,
+				tension: 0.3,
+				pointRadius: 0,
+				borderWidth: 2,
+			},
+			{
+				label: 'Media histórica',
+				data: showFullYear ? progressionData.fullAverage : progressionData.averageYear,
+				borderColor: 'rgba(255, 99, 132, 1)',
+				backgroundColor: 'rgba(255, 99, 132, 0.1)',
+				fill: showFullYear ? false : true,
+				tension: 0.3,
+				pointRadius: 0,
+				borderWidth: 2,
+				borderDash: [5, 5],
+			},
+		],
+	}
+
+	const progressionOptions = {
+		responsive: true,
+		interaction: {
+			mode: 'index',
+			intersect: false,
+		},
+		plugins: {
+			legend: {
+				position: 'top',
+			},
+			title: {
+				display: true,
+				text: 'Año actual vs Media histórica',
+			},
+		},
+		scales: {
+			y: {
+				beginAtZero: true,
+				title: {
+					display: true,
+					text: 'Litros acumulados',
+				},
+			},
+			x: {
+				ticks: {
+					maxRotation: 45,
+					minRotation: 45,
+				},
+			},
+		},
+	}
+
+	// Calcular mapa de calor de días del año
+	const calculateHeatmapData = () => {
+		const dailyRainfall = {} // { 'MM-DD': { sum: X, count: Y, maxYear: Z, maxAmount: W } }
+		const startYear = 2014
+
+		data.forEach((item) => {
+			const itemDate = new Date(item.fecha)
+			const year = itemDate.getFullYear()
+			if (year >= startYear) {
+				const month = String(itemDate.getMonth() + 1).padStart(2, '0')
+				const day = String(itemDate.getDate()).padStart(2, '0')
+				const key = `${month}-${day}`
+
+				if (!dailyRainfall[key]) {
+					dailyRainfall[key] = { sum: 0, count: 0, maxAmount: 0 }
+				}
+				dailyRainfall[key].sum += item.litros
+				dailyRainfall[key].count += 1
+				if (item.litros > dailyRainfall[key].maxAmount) {
+					dailyRainfall[key].maxAmount = item.litros
+				}
+			}
+		})
+
+		// Calcular media para cada día
+		const heatmapData = {}
+		Object.keys(dailyRainfall).forEach((key) => {
+			heatmapData[key] = {
+				average: dailyRainfall[key].sum / dailyRainfall[key].count,
+				total: dailyRainfall[key].sum,
+				count: dailyRainfall[key].count,
+				max: dailyRainfall[key].maxAmount,
+			}
+		})
+
+		return heatmapData
+	}
+
+	const heatmapData = calculateHeatmapData()
+
+	// Encontrar el valor máximo para la escala de colores (depende del modo)
+	const maxValue = heatmapMode === 'total' 
+		? Math.max(...Object.values(heatmapData).map(d => d.total), 1)
+		: Math.max(...Object.values(heatmapData).map(d => d.count), 1)
+
+	// Función para obtener el color basado en la intensidad
+	const getHeatColor = (dayData) => {
+		const value = heatmapMode === 'total' ? dayData.total : dayData.count
+		if (value === 0) return '#f0f2f5'
+		const intensity = Math.min(value / maxValue, 1)
+		// Escala de azules: más lluvia = más oscuro
+		if (intensity < 0.1) return '#e3f2fd'
+		if (intensity < 0.2) return '#bbdefb'
+		if (intensity < 0.3) return '#90caf9'
+		if (intensity < 0.4) return '#64b5f6'
+		if (intensity < 0.5) return '#42a5f5'
+		if (intensity < 0.6) return '#2196f3'
+		if (intensity < 0.7) return '#1e88e5'
+		if (intensity < 0.8) return '#1976d2'
+		if (intensity < 0.9) return '#1565c0'
+		return '#0d47a1'
+	}
+
+	// Cerrar tooltip al hacer click fuera
+	const handleHeatmapContainerClick = (e) => {
+		if (e.target.classList.contains('heatmap-container') || 
+			e.target.classList.contains('heatmap-grid') ||
+			e.target.classList.contains('heatmap-days')) {
+			setActiveTooltip(null)
+		}
+	}
+
+	// Generar estructura del calendario
+	const generateCalendarData = () => {
+		const months = [
+			{ name: 'Ene', days: 31, month: '01' },
+			{ name: 'Feb', days: 29, month: '02' },
+			{ name: 'Mar', days: 31, month: '03' },
+			{ name: 'Abr', days: 30, month: '04' },
+			{ name: 'May', days: 31, month: '05' },
+			{ name: 'Jun', days: 30, month: '06' },
+			{ name: 'Jul', days: 31, month: '07' },
+			{ name: 'Ago', days: 31, month: '08' },
+			{ name: 'Sep', days: 30, month: '09' },
+			{ name: 'Oct', days: 31, month: '10' },
+			{ name: 'Nov', days: 30, month: '11' },
+			{ name: 'Dic', days: 31, month: '12' },
+		]
+		return months
+	}
+
+	const calendarMonths = generateCalendarData()
+
 	if (loading) {
 		return (
 			<div>
-				<h1>Registro de lluvias en Castillo de Locubín</h1>
+				<header className='app-header'>
+					<div className='header-text'>
+						<h1>Registro de lluvias de Castillo de Locubín</h1>
+						<p>Datos recogidos por Rafael Muñoz y Jose Manuel Domínguez</p>
+					</div>
+				</header>
 				<div className='loader'></div>
 			</div>
 		)
 	}
 	return (
 		<div>
-			<h1>Registro de lluvias en Castillo de Locubín</h1>
+			<header className='app-header'>
+				<div className='header-text'>
+					<h1>Registro de lluvias de Castillo de Locubín</h1>
+					<p>Datos recogidos por Rafael Muñoz y Jose Manuel Domínguez</p>
+				</div>
+			</header>
+			<nav className='nav-menu'>
+				<button onClick={() => scrollToSection('resumen')}>Resumen</button>
+				<button onClick={() => scrollToSection('historico')}>Histórico</button>
+				<button onClick={() => scrollToSection('graficos')} className='hide-mobile'>Gráficos</button>
+				<button onClick={() => scrollToSection('datos')}>Datos</button>
+			</nav>
+			<div className='main-content'>
+			<section id='resumen' className='section'>
+			<h2>Resumen del año actual</h2>
 			<div className='year'>
 				<table className='general-table'>
 					<tbody>
@@ -312,10 +638,12 @@ function App() {
 					</tbody>
 				</table>
 			</div>
+			</section>
 
 			{/* Nueva tabla: Total años anteriores */}
+			<section id='historico' className='section'>
+			<h2>Total años anteriores</h2>
 			<div className='total-year'>
-				<h2>Total años anteriores</h2>
 				<table className='table general-table'>
 					<thead>
 						<tr>
@@ -336,23 +664,129 @@ function App() {
 								</td>
 							</tr>
 						))}
+						<tr style={{ backgroundColor: '#0275d8', color: 'white', fontWeight: 'bold' }}>
+							<td>Media anual</td>
+							<td style={{ textAlign: 'center' }}>{yearlyAverage.toFixed(1)}</td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
+			</section>
+
+			{/* Gráfica de progresión acumulada */}
+			<section id='graficos' className='section'>
+			<h2 className='hide-mobile'>Gráficos</h2>
+			<div style={{ margin: '20px auto', maxWidth: '800px', position: 'relative' }} className='hide-mobile'>
+				<Line data={progressionChartData} options={progressionOptions} />
+				<button
+					onClick={() => setShowFullYear(!showFullYear)}
+					style={{
+						position: 'absolute',
+						top: '8px',
+						right: '5px',
+						padding: '6px 12px',
+						backgroundColor: showFullYear ? 'rgba(255, 99, 132, 0.9)' : 'rgba(0, 0, 0, 0.5)',
+						color: 'white',
+						border: 'none',
+						borderRadius: '4px',
+						cursor: 'pointer',
+						fontSize: '12px',
+						fontWeight: '500',
+						transition: 'background-color 0.2s',
+					}}
+				>
+					{showFullYear ? 'Previsión anual' : 'Previsión anual'}
+				</button>
+			</div>
 
 			{/* Gráfica con los datos anuales */}
-			<div style={{ margin: '40px auto', maxWidth: '800px' }} className='hide-mobile'>
+			<div style={{ margin: '30px auto', maxWidth: '800px' }} className='hide-mobile'>
 				<Bar data={chartData} options={options} />
 			</div>
 
 			{/* Gráfica con la media mensual */}
-			<div style={{ margin: '40px auto', maxWidth: '800px' }} className='hide-mobile'>
+			<div style={{ margin: '30px auto', maxWidth: '800px' }} className='hide-mobile'>
 				<Bar data={monthlyAverageChartData} options={monthlyAverageOptions} />
 			</div>
 
-			<br />
+			{/* Calendario de lluvias */}
+			<div className='heatmap-container hide-mobile' onClick={handleHeatmapContainerClick}>
+				<h2>Calendario de lluvias</h2>
+				<p style={{ textAlign: 'center', color: '#666', marginBottom: '10px', fontSize: '0.9rem' }}>
+					Haz click en un día para ver los detalles
+				</p>
+				<div className='heatmap-mode-toggle'>
+					<button
+						className={heatmapMode === 'total' ? 'active' : ''}
+						onClick={() => { setHeatmapMode('total'); setActiveTooltip(null); }}
+					>
+						Por litros totales
+					</button>
+					<button
+						className={heatmapMode === 'count' ? 'active' : ''}
+						onClick={() => { setHeatmapMode('count'); setActiveTooltip(null); }}
+					>
+						Por días con lluvia
+					</button>
+				</div>
+				<div className='heatmap-grid'>
+					{calendarMonths.map((month) => (
+						<div key={month.month} className='heatmap-month'>
+							<div className='heatmap-month-name'>{month.name}</div>
+							<div className='heatmap-days'>
+								{Array.from({ length: month.days }, (_, i) => {
+									const day = String(i + 1).padStart(2, '0')
+									const key = `${month.month}-${day}`
+									const dayData = heatmapData[key] || { total: 0, count: 0, average: 0 }
+									const isActive = activeTooltip === key
+									return (
+										<div
+											key={key}
+											className={`heatmap-day ${isActive ? 'active' : ''}`}
+											style={{ backgroundColor: getHeatColor(dayData) }}
+											onClick={(e) => { e.stopPropagation(); setActiveTooltip(isActive ? null : key); }}
+										>
+											{i + 1}
+											{isActive && (
+												<div className='heatmap-tooltip'>
+													<div className='heatmap-tooltip-title'>{i + 1} de {month.name}</div>
+													<div className='heatmap-tooltip-row'>
+														<span>Total acumulado:</span>
+														<strong>{dayData.total.toFixed(1)} L</strong>
+													</div>
+													<div className='heatmap-tooltip-row'>
+														<span>Días con lluvia:</span>
+														<strong>{dayData.count}</strong>
+													</div>
+													<div className='heatmap-tooltip-row'>
+														<span>Media por día:</span>
+														<strong>{dayData.average.toFixed(1)} L</strong>
+													</div>
+												</div>
+											)}
+										</div>
+									)
+								})}
+							</div>
+						</div>
+					))}
+				</div>
+				<div className='heatmap-legend'>
+					<span>{heatmapMode === 'total' ? 'Menos litros' : 'Menos días'}</span>
+					<div className='heatmap-legend-colors'>
+						<div style={{ backgroundColor: '#e3f2fd' }}></div>
+						<div style={{ backgroundColor: '#90caf9' }}></div>
+						<div style={{ backgroundColor: '#42a5f5' }}></div>
+						<div style={{ backgroundColor: '#1976d2' }}></div>
+						<div style={{ backgroundColor: '#0d47a1' }}></div>
+					</div>
+					<span>{heatmapMode === 'total' ? 'Más litros' : 'Más días'}</span>
+				</div>
+			</div>
+			</section>
+
+			<section id='datos' className='section'>
 			<h2>Datos completos por año</h2>
-			<br />
 			<div className='year'>
 				{years.map((year) => (
 					<div key={year}>
@@ -444,17 +878,17 @@ function App() {
 					</div>
 				))}
 			</div>
+			</section>
 
-			<div className='counter'>Visitas desde 18/08/24: {counter}</div>
-
-			<p className='signature'>
-				Datos recogidos por <br /> Rafael Muñoz y <br />
-				Jose Manuel <span onClick={handleOpenModal}>Domínguez</span>.
-			</p>
-			<p className='signature'>
-				Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a>
-			</p>
-			<InsertDataModal open={openModal} handleClose={handleCloseModal} onSubmitSuccess={handleDataInsertSuccess} />
+			<footer className='app-footer'>
+				<div className='footer-content'>
+					<div className='footer-visits'>Visitas desde 18/08/24: {counter}</div>
+					<div className='footer-credits'>
+						<span>Web y automatización - <a href="https://domindez.com">Daniel Domínguez</a></span>
+					</div>
+				</div>
+			</footer>
+			</div>
 		</div>
 	)
 }

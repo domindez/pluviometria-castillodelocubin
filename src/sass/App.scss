@@ -6,11 +6,113 @@
 }
 
 body {
-	font-family: 'Arial', sans-serif;
-	background-color: #f4f4f4;
+	font-family: 'Segoe UI', 'Arial', sans-serif;
+	background-color: #f0f2f5;
 	color: #333;
 	margin: 0;
-	padding: 20px;
+	padding: 0;
+	line-height: 1.5;
+}
+
+// Header profesional
+.app-header {
+	background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
+	color: white;
+	padding: 24px 24px 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 12px rgba(2, 117, 216, 0.3);
+
+	@media (max-width: 480px) {
+		padding: 20px 16px 16px;
+	}
+}
+
+.header-text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+
+	h1 {
+		color: white;
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 600;
+		letter-spacing: -0.5px;
+
+		@media (max-width: 480px) {
+			font-size: 1.2rem;
+		}
+	}
+
+	p {
+		margin: 4px 0 0;
+		font-size: 0.9rem;
+		opacity: 0.85;
+		font-weight: 400;
+
+		@media (max-width: 480px) {
+			font-size: 0.8rem;
+		}
+	}
+}
+
+// Menú de navegación
+.nav-menu {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	padding: 12px 24px;
+	background-color: white;
+	border-bottom: 1px solid #e0e0e0;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+	a,
+	button {
+		padding: 8px 16px;
+		text-decoration: none;
+		color: #555;
+		font-size: 0.9rem;
+		font-weight: 500;
+		border-radius: 6px;
+		transition: all 0.2s ease;
+		background: none;
+		border: none;
+		cursor: pointer;
+
+		&:hover {
+			background-color: #f0f2f5;
+			color: #0275d8;
+		}
+
+		@media (max-width: 480px) {
+			padding: 8px 12px;
+			font-size: 0.8rem;
+		}
+	}
+}
+
+// Contenedor principal
+.main-content {
+	padding: 24px 24px 0;
+}
+
+// Secciones
+section {
+	scroll-margin-top: 60px;
+}
+
+.section {
+	margin-bottom: 40px;
+
+	> h2 {
+		margin-bottom: 16px;
+	}
 }
 
 h1,
@@ -22,56 +124,99 @@ h4 {
 }
 
 h4 {
-	margin-top: 20px;
+	margin-top: 24px;
 }
 
-h1 {
-	margin-bottom: 20px;
+h2 {
+	font-size: 1.4rem;
+	margin-bottom: 8px;
+}
+
+h3 {
+	font-size: 1.15rem;
 }
 
 .general-table {
 	background-color: white;
-	border-radius: 8px;
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	padding: 20px;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	padding: 24px;
 	margin: auto;
-	margin-bottom: 20px;
+	margin-bottom: 24px;
 
 	@media (max-width: 768px) {
 		width: 100%;
 		margin-top: 20px;
 		margin-bottom: 20px;
+		padding: 16px;
 	}
 	tr,
 	td {
-		padding: 5px;
+		padding: 10px 14px;
 	}
 	tr:nth-child(even) {
-		background-color: #f2f2f2;
+		background-color: #f8f9fa;
 	}
 }
 
 // Estilos para el contenedor principal
 .year {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-	gap: 20px;
-	padding: 0 10px; // Agrega un padding horizontal al contenedor para evitar el scroll horizontal
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 24px;
+	padding: 0 10px;
 
 	@media (max-width: 768px) {
 		grid-template-columns: 1fr;
 		gap: 20px;
+		padding: 0;
 		> div {
-			width: 100%; // Ajusta el ancho para asegurar el margen
-			margin: 0 auto; // Centra los bloques en pantallas pequeñas
+			width: 100%;
+			margin: 0 auto;
 		}
 	}
 
 	> div {
 		background-color: white;
-		border-radius: 8px;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		padding: 20px;
+		border-radius: 12px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+		padding: 24px;
+		transition: box-shadow 0.2s ease;
+
+		&:hover {
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+		}
+	}
+
+	// Tablas dentro de las cards de años - sin bordes
+	.table {
+		border: none;
+		margin-top: 12px;
+
+		th {
+			background-color: transparent;
+			color: #0275d8;
+			font-weight: 600;
+			border-bottom: 2px solid #e9ecef;
+		}
+
+		td {
+			border: none;
+			border-bottom: 1px solid #f0f0f0;
+			padding: 8px 12px;
+		}
+
+		tr:last-child td {
+			border-bottom: none;
+		}
+
+		tr:nth-child(even) {
+			background-color: transparent;
+		}
+
+		tr:hover td {
+			background-color: #f8f9fa;
+		}
 	}
 }
 
@@ -79,14 +224,16 @@ h1 {
 .table {
 	width: 100%;
 	border-collapse: collapse;
-	margin-top: 20px;
+	margin-top: 16px;
+	border-radius: 8px;
+	overflow: hidden;
 
 	th,
 	td {
-		padding: 5px;
+		padding: 10px 12px;
 	}
 	td {
-		border: 1px solid lightgray;
+		border: 1px solid #e9ecef;
 		border-collapse: collapse;
 		text-align: center;
 	}
@@ -94,10 +241,15 @@ h1 {
 	th {
 		background-color: #0275d8;
 		color: white;
+		font-weight: 500;
 	}
 
 	tr:nth-child(even) {
-		background-color: #f2f2f2;
+		background-color: #f8f9fa;
+	}
+
+	tr:hover td {
+		background-color: #e9f4ff;
 	}
 }
 
@@ -105,19 +257,54 @@ h1 {
 	width: fit-content;
 }
 
-.signature {
-	margin: 40px auto 20px;
-	text-align: center;
-
-	a {
-		color: rgb(210, 137, 9);
-	}
+// Footer
+.app-footer {
+	background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
+	color: white;
+	margin-top: 48px;
+	padding: 24px;
+	margin-left: -24px;
+	margin-right: -24px;
+	margin-bottom: -24px;
 }
 
-.counter {
+.footer-content {
+	max-width: 800px;
+	margin: 0 auto;
 	display: flex;
-	width: fit-content;
-	margin: 40px auto 0px;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	text-align: center;
+}
+
+.footer-visits {
+	font-size: 0.9rem;
+	opacity: 0.9;
+	padding: 8px 16px;
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 20px;
+}
+
+.footer-credits {
+	font-size: 0.85rem;
+	opacity: 0.85;
+
+	a {
+		color: white;
+		text-decoration: none;
+		font-weight: 500;
+		transition: opacity 0.2s ease;
+
+		&:hover {
+			opacity: 0.8;
+			text-decoration: underline;
+		}
+	}
+
+	span {
+		cursor: default;
+	}
 }
 
 .loader {
@@ -150,11 +337,183 @@ h1 {
 .total-year {
 	display: flex;
 	flex-direction: column;
-	gap: 20px;
 }
 
 .hide-mobile {
 	@media screen and (max-width: 600px) {
 		display: none;
+	}
+}
+
+// Mapa de calor
+.heatmap-container {
+	margin: 40px auto;
+	max-width: 900px;
+	background-color: white;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	padding: 24px;
+}
+
+.heatmap-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+
+	@media (max-width: 768px) {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	@media (max-width: 500px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.heatmap-month {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.heatmap-month-name {
+	font-weight: 600;
+	color: #0275d8;
+	text-align: center;
+	font-size: 0.9rem;
+}
+
+.heatmap-days {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+
+.heatmap-day {
+	aspect-ratio: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.65rem;
+	color: #333;
+	border-radius: 3px;
+	cursor: pointer;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+	position: relative;
+
+	&:hover {
+		transform: scale(1.3);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+		z-index: 10;
+	}
+
+	&.active {
+		transform: scale(1.3);
+		box-shadow: 0 2px 12px rgba(2, 117, 216, 0.5);
+		z-index: 100;
+		outline: 2px solid #0275d8;
+	}
+}
+
+.heatmap-tooltip {
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: white;
+	border-radius: 8px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	padding: 12px;
+	min-width: 180px;
+	z-index: 1000;
+	font-size: 0.8rem;
+	text-align: left;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 6px solid transparent;
+		border-top-color: white;
+	}
+}
+
+.heatmap-tooltip-title {
+	font-weight: 600;
+	color: #0275d8;
+	margin-bottom: 8px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid #eee;
+	text-align: center;
+}
+
+.heatmap-tooltip-row {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 4px;
+	gap: 12px;
+
+	span {
+		color: #666;
+	}
+
+	strong {
+		color: #333;
+	}
+}
+
+.heatmap-mode-toggle {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 20px;
+	background-color: #f0f2f5;
+	border-radius: 8px;
+	padding: 4px;
+	width: fit-content;
+	margin-left: auto;
+	margin-right: auto;
+
+	button {
+		padding: 8px 20px;
+		border: none;
+		background-color: transparent;
+		border-radius: 6px;
+		cursor: pointer;
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: #666;
+		transition: all 0.2s ease;
+
+		&:hover:not(.active) {
+			color: #333;
+		}
+
+		&.active {
+			background-color: white;
+			color: #0275d8;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		}
+	}
+}
+
+.heatmap-legend {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 20px;
+	font-size: 0.85rem;
+	color: #666;
+}
+
+.heatmap-legend-colors {
+	display: flex;
+	gap: 2px;
+
+	div {
+		width: 24px;
+		height: 16px;
+		border-radius: 2px;
 	}
 }
