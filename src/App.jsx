@@ -489,7 +489,7 @@ function App() {
 
 	// Calcular mapa de calor de días del año
 	const calculateHeatmapData = () => {
-		const dailyRainfall = {} // { 'MM-DD': { sum: X, count: Y, maxYear: Z, maxAmount: W } }
+		const dailyRainfall = {} // { 'MM-DD': { sum: X, count: Y, entries: [{year, litros}] } }
 		const startYear = 2014
 
 		data.forEach((item) => {
@@ -501,24 +501,24 @@ function App() {
 				const key = `${month}-${day}`
 
 				if (!dailyRainfall[key]) {
-					dailyRainfall[key] = { sum: 0, count: 0, maxAmount: 0 }
+					dailyRainfall[key] = { sum: 0, count: 0, entries: [] }
 				}
 				dailyRainfall[key].sum += item.litros
 				dailyRainfall[key].count += 1
-				if (item.litros > dailyRainfall[key].maxAmount) {
-					dailyRainfall[key].maxAmount = item.litros
-				}
+				dailyRainfall[key].entries.push({ year, litros: item.litros })
 			}
 		})
 
 		// Calcular media para cada día
 		const heatmapData = {}
 		Object.keys(dailyRainfall).forEach((key) => {
+			// Ordenar entries por año descendente
+			const sortedEntries = dailyRainfall[key].entries.sort((a, b) => b.year - a.year)
 			heatmapData[key] = {
 				average: dailyRainfall[key].sum / dailyRainfall[key].count,
 				total: dailyRainfall[key].sum,
 				count: dailyRainfall[key].count,
-				max: dailyRainfall[key].maxAmount,
+				entries: sortedEntries,
 			}
 		})
 
@@ -742,7 +742,7 @@ function App() {
 								{Array.from({ length: month.days }, (_, i) => {
 									const day = String(i + 1).padStart(2, '0')
 									const key = `${month.month}-${day}`
-									const dayData = heatmapData[key] || { total: 0, count: 0, average: 0 }
+									const dayData = heatmapData[key] || { total: 0, count: 0, average: 0, entries: [] }
 									const isActive = activeTooltip === key
 									return (
 										<div
@@ -754,19 +754,21 @@ function App() {
 											{i + 1}
 											{isActive && (
 												<div className='heatmap-tooltip'>
-													<div className='heatmap-tooltip-title'>{i + 1} de {month.name}</div>
-													<div className='heatmap-tooltip-row'>
-														<span>Total acumulado:</span>
-														<strong>{dayData.total.toFixed(1)} L</strong>
+													<div className='heatmap-tooltip-header'>{i + 1} de {month.name}</div>
+													<div className='heatmap-tooltip-stats'>
+														<div className='stat'><span>{dayData.total.toFixed(1)}</span><small>litros</small></div>
+														<div className='stat'><span>{dayData.count}</span><small>{dayData.count === 1 ? 'día' : 'días'}</small></div>
 													</div>
-													<div className='heatmap-tooltip-row'>
-														<span>Días con lluvia:</span>
-														<strong>{dayData.count}</strong>
-													</div>
-													<div className='heatmap-tooltip-row'>
-														<span>Media por día:</span>
-														<strong>{dayData.average.toFixed(1)} L</strong>
-													</div>
+													{dayData.entries.length > 0 && (
+														<div className='heatmap-tooltip-list'>
+															{dayData.entries.map((entry, idx) => (
+																<div key={idx} className='heatmap-tooltip-entry'>
+																	<span>{entry.year}</span>
+																	<span>{entry.litros} L</span>
+																</div>
+															))}
+														</div>
+													)}
 												</div>
 											)}
 										</div>
