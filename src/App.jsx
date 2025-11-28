@@ -610,6 +610,7 @@ function App() {
 			<nav className='nav-menu nav-mobile'>
 				<button onClick={() => scrollToSection('resumen')}>Resumen</button>
 				<button onClick={() => scrollToSection('historico')}>Histórico</button>
+				<button onClick={() => scrollToSection('graficos')}>Gráficos</button>
 				<button onClick={() => scrollToSection('datos')}>Datos</button>
 			</nav>
 			<div className='main-content'>
@@ -680,7 +681,20 @@ function App() {
 
 			{/* Gráfica de progresión acumulada */}
 			<section id='graficos' className='section'>
-			<h2 className='hide-mobile'>Gráficos</h2>
+			<h2>Gráficos</h2>
+			
+			{/* Aviso para dispositivos móviles */}
+			<div className='mobile-warning'>
+				<div className='mobile-warning-icon'>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+						<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+						<line x1="8" y1="21" x2="16" y2="21"/>
+						<line x1="12" y1="17" x2="12" y2="21"/>
+					</svg>
+				</div>
+				<p>Para ver los gráficos y el calendario de lluvias, gira tu dispositivo a horizontal o usa una pantalla más grande.</p>
+			</div>
+
 			<div style={{ margin: '20px auto', maxWidth: '800px', position: 'relative' }} className='hide-mobile'>
 				<Line data={progressionChartData} options={progressionOptions} />
 				<button
