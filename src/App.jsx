@@ -490,7 +490,7 @@ function App() {
 	// Calcular mapa de calor de días del año
 	const calculateHeatmapData = () => {
 		const dailyRainfall = {} // { 'MM-DD': { sum: X, count: Y, entries: [{year, litros}] } }
-		const startYear = 2014
+		const startYear = 2015 // Excluir 2014 porque no tiene datos de sept/oct
 
 		data.forEach((item) => {
 			const itemDate = new Date(item.fecha)
