@@ -207,23 +207,23 @@ function App() {
 	// Calcular media mensual desde 2015-2016
 	const calculateMonthlyAverages = () => {
 		const startYearForAverage = 2015
-		const monthlyAccumulated = Array(12).fill(0).map(() => ({ sum: 0, count: 0 }))
-
+		const monthlyAccumulated = Array(12).fill(0)
+		
+		// Contar años completos para la media
+		let totalYears = 0
 		Object.keys(organizedData).forEach((year) => {
 			const yearNum = parseInt(year)
 			if (yearNum >= startYearForAverage && yearNum < currentHydrologicalYear) {
+				totalYears++
 				organizedData[year].monthlyTotals.forEach((total, monthIndex) => {
-					if (total > 0) {
-						monthlyAccumulated[monthIndex].sum += total
-						monthlyAccumulated[monthIndex].count += 1
-					}
+					monthlyAccumulated[monthIndex] += total
 				})
 			}
 		})
 
-		// Calcular media y ajustar al orden del año hidrológico
-		const averages = monthlyAccumulated.map((month) => 
-			month.count > 0 ? parseFloat((month.sum / month.count).toFixed(1)) : 0
+		// Calcular media dividiendo por el número total de años
+		const averages = monthlyAccumulated.map((sum) => 
+			totalYears > 0 ? parseFloat((sum / totalYears).toFixed(1)) : 0
 		)
 
 		// Reordenar: septiembre a agosto
