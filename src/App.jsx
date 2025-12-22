@@ -20,7 +20,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineEleme
 function App() {
 	const [data, setData] = useState([])
 	const [counter, setCounter] = useState(0)
-	const [loading, setLoading] = useState(false)
+	const [loading, setLoading] = useState(true)
 	const [showFullYear, setShowFullYear] = useState(false)
 	const [heatmapMode, setHeatmapMode] = useState('total') // 'total' or 'count'
 	const [activeTooltip, setActiveTooltip] = useState(null)
