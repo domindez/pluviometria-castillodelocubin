@@ -105,11 +105,13 @@ function App() {
 			const itemDate = new Date(item.fecha)
 			const itemYear = getHydrologicalYear(item.fecha)
 
-			// Solo considerar registros del año hidrológico anterior (2023)
+			// Solo considerar registros del año hidrológico anterior
 			if (itemYear === currentHydrologicalYear - 1) {
 				// Crear rango desde 1 septiembre del año anterior hasta la fecha actual del año anterior
-				const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1) // 1 septiembre 2023
-				const equivalentDateLastYear = new Date(currentHydrologicalYear - 1, currentMonth, currentDate) // 11 septiembre 2024
+				const startOfPreviousYear = new Date(currentHydrologicalYear - 1, 8, 1)
+				// Si estamos entre enero-agosto, necesitamos el año siguiente al hidrológico
+				const naturalYearForDate = currentMonth < 8 ? currentHydrologicalYear : currentHydrologicalYear - 1
+				const equivalentDateLastYear = new Date(naturalYearForDate, currentMonth, currentDate)
 
 				if (itemDate >= startOfPreviousYear && itemDate <= equivalentDateLastYear) {
 					organizedData[currentHydrologicalYear].previousYearAccumulated += item.litros
@@ -131,7 +133,9 @@ function App() {
 				if (itemYear === year) {
 					// Crear rango desde 1 septiembre hasta la fecha actual del año correspondiente
 					const startOfYear = new Date(year, 8, 1)
-					const equivalentDateInYear = new Date(year, currentMonth, currentDate)
+					// Si estamos entre enero-agosto, necesitamos el año siguiente al hidrológico
+					const naturalYearForDate = currentMonth < 8 ? year + 1 : year
+					const equivalentDateInYear = new Date(naturalYearForDate, currentMonth, currentDate)
 					
 					if (itemDate >= startOfYear && itemDate <= equivalentDateInYear) {
 						accumulatedForYear += item.litros
@@ -378,12 +382,12 @@ function App() {
 			})
 		}
 
-		// Convertir a acumulado
+		// Convertir a acumulado (sin incluir el día de hoy)
 		const currentYearAccumulated = []
 		let cumSum = 0
 		const todayDayIndex = getHydrologicalDayOfYear(today)
 		
-		for (let i = 0; i <= todayDayIndex && i < 365; i++) {
+		for (let i = 0; i < todayDayIndex && i < 365; i++) {
 			cumSum += currentYearDaily[i]
 			currentYearAccumulated.push(parseFloat(cumSum.toFixed(1)))
 		}
@@ -421,8 +425,9 @@ function App() {
 		return {
 			labels: generateDayLabels(),
 			currentYear: currentYearAccumulated,
-			averageYear: averageAccumulated.slice(0, todayDayIndex + 1),
+			averageYear: averageAccumulated.slice(0, todayDayIndex),
 			fullAverage: averageAccumulated,
+			dayLabelsWithDate: generateDayLabels(), // Etiquetas simples
 		}
 	}
 
@@ -468,6 +473,32 @@ function App() {
 			title: {
 				display: true,
 				text: 'Año actual vs Media histórica',
+			},
+			tooltip: {
+				callbacks: {
+					title: function(context) {
+						const dataIndex = context[0].dataIndex
+						const monthsOrder = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7]
+						const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+						const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+						
+						let dayCount = 0
+						let foundDate = ''
+						
+						for (let i = 0; i < monthsOrder.length; i++) {
+							const month = monthsOrder[i]
+							for (let day = 1; day <= daysInMonth[month]; day++) {
+								if (dayCount === dataIndex) {
+									foundDate = `${day} ${monthNames[month]}`
+									break
+								}
+								dayCount++
+							}
+							if (foundDate) break
+						}
+						return foundDate
+					}
+				}
 			},
 		},
 		scales: {
@@ -628,7 +659,9 @@ function App() {
 						<tr>
 							<td>Media de litros años hidrológicos anteriores por estas fechas</td>
 							<td style={{ textAlign: 'center' }}>
-								{(organizedData[currentHydrologicalYear]?.averagePreviousYears || 0).toFixed(1)}
+								{progressionData.averageYear.length > 0 
+									? progressionData.averageYear[progressionData.averageYear.length - 1].toFixed(1)
+									: '0.0'}
 							</td>
 						</tr>
 						<tr>
