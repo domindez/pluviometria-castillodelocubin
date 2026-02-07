@@ -61,6 +61,7 @@ function App() {
 	}, [])
 
 	const today = new Date()
+	today.setHours(0, 0, 0, 0)
 	const currentMonth = today.getMonth()
 	const currentDate = today.getDate()
 	const currentHydrologicalYear = today.getFullYear() - (currentMonth < 8 ? 1 : 0)
