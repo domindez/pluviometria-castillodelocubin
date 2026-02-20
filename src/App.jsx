@@ -619,6 +619,9 @@ function App() {
 					<div className='header-text'>
 						<h1>Registro de lluvias de Castillo de Locubín</h1>
 						<p>Datos recogidos por Rafael Muñoz y Jose Manuel Domínguez</p>
+						<p className='footer-credits'>
+							Web y automatización: <a href='https://domindez.com'>Daniel Domínguez</a>
+						</p>
 					</div>
 				</header>
 				<div className='loader'></div>
@@ -631,6 +634,9 @@ function App() {
 				<div className='header-text'>
 					<h1>Registro de lluvias de Castillo de Locubín</h1>
 					<p>Datos recogidos por Rafael Muñoz y Jose Manuel Domínguez</p>
+					<p className='footer-credits'>
+						Web y automatización - <a href='https://domindez.com'>Daniel Domínguez</a>
+					</p>
 				</div>
 				<nav className='nav-menu nav-desktop'>
 					<button onClick={() => scrollToSection('resumen')}>Resumen</button>

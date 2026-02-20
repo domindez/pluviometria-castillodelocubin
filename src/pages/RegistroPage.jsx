@@ -55,6 +55,9 @@ const RegistroPage = ({ onSubmitSuccess }) => {
 				<div className='header-text'>
 					<h1>Registro de lluvias de Castillo de Locubín</h1>
 					<p>Datos recogidos por Rafael Muñoz y Jose Manuel Domínguez</p>
+					<p className='footer-credits'>
+						Web y automatización by <a href='https://domindez.com'>Daniel Domínguez</a>
+					</p>
 				</div>
 			</header>
 			
